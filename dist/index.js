@@ -8,22 +8,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const pg_1 = require("pg");
+const express_1 = __importDefault(require("express"));
+const app = (0, express_1.default)();
 const pgClient = new pg_1.Client("postgresql://neondb_owner:DOL8hto1dAVc@ep-lingering-glade-a8ieblb5.eastus2.azure.neon.tech/neondb?sslmode=requirez");
-// const pgClient = new Client({
-//     user: "neondb_owner",
-//     password:"DOL8hto1dAVc@ep",
-//     port:5432,
-//     host:"@ep-lingering-glade-a8ieblb5.eastus2.azure.neon.tech",
-//     database:"neondb",
-//     ssl:"true",
-// })
-function main() {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield pgClient.connect();
-        const response = yield pgClient.query("SELECT * FROM users;");
-        console.log(response.rows);
-    });
-}
-main();
+pgClient.connect();
+app.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const username = req.body.username;
+    const password = req.body.password;
+    const email = req.body.email;
+    try {
+        const insertQuery = `INSERT INTO users (username,email,password) VALUES ($s1,$s2,$s3);`;
+        const response = yield pgClient.query(insertQuery, [username, email, password]);
+        res.json({
+            message: "signed successfully"
+        });
+    }
+    catch (e) {
+        res.json({
+            message: "ther is error while connecting to server"
+        });
+    }
+}));
+app.listen(4000, () => {
+    console.log("connected over a database");
+});
