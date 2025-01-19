@@ -2,7 +2,9 @@ import { Client } from "pg";
 import  express  from "express";
 
 const app=express();
-const pgClient = new Client("postgresql://neondb_owner:DOL8hto1dAVc@ep-lingering-glade-a8ieblb5.eastus2.azure.neon.tech/neondb?sslmode=requirez");
+
+app.use(express.json());
+const pgClient = new Client("");
 
 pgClient.connect();
 
@@ -11,25 +13,40 @@ app.post("/signup",async(req,res)=>{
     const password=req.body.password;
     const email=req.body.email;
 
+    const city=req.body.city;
+    const country=req.body.country;
+    const street=req.body.street;
+    const pincode=req.body.pincode;
+
 
     try{
-        const insertQuery=`INSERT INTO users (username,email,password) VALUES ($s1,$s2,$s3);`
-        const response = await pgClient.query(insertQuery,[username,email,password]);
+        const insertQuery=`INSERT INTO users (username,email,password) VALUES ($1,$2,$3) RETURNING id;`
+        const addressInsertQuery=`INSERT INTO addresses (city,country,street,pincode,user_id) VALUES ($1,$2,$3,$4,$5);`
 
+        await pgClient.query("BEGIN;")
+        const response = await pgClient.query(insertQuery,[username,email,password]);
+        const userId=response.rows[0].id;
+
+
+        const addressInsertQueryresponse =await pgClient.query(addressInsertQuery,[city,country,street,pincode,userId]);
+
+        await pgClient.query("COMMIT");
+        
+        
         res.json({
             message:"signed successfully"
         })
 
-    }catch(e){
-        res.json({
+    }catch(e){  
+        res.status(201).json({
             message:"ther is error while connecting to server"
         })
     }
 })
 
-app.listen(4000,()=>{
+app.listen(5000,()=>{
     console.log("connected over a database");
-})
+});
 
 
 
