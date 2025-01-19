@@ -44,6 +44,21 @@ app.post("/signup",async(req,res)=>{
     }
 })
 
+
+app.get("/metadata",async(req,res)=>{
+    const id = req.query.id;
+    const query=`SELECT users.id, users.username, users.email, addresses.city, addresses.country, addresses.street, addresses.pincode
+    FROM users
+    JOIN addresses ON users.id = addresses.user_id
+    WHERE users.id = $1;`
+
+    const response = await pgClient.query(query,[id]);
+    res.json({
+        response:response.rows
+    })
+})
+
+
 app.listen(5000,()=>{
     console.log("connected over a database");
 });

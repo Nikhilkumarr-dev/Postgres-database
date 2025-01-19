@@ -44,6 +44,17 @@ app.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
 }));
+app.get("/metadata", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.query.id;
+    const query = `SELECT users.id, users.username, users.email, addresses.city, addresses.country, addresses.street, addresses.pincode
+    FROM users
+    JOIN addresses ON users.id = addresses.user_id
+    WHERE users.id = $1;`;
+    const response = yield pgClient.query(query, [id]);
+    res.json({
+        response: response.rows
+    });
+}));
 app.listen(5000, () => {
     console.log("connected over a database");
 });
